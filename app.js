@@ -1,14 +1,14 @@
 const express = require("express");
 const bodyparser = require("body-parser");
+const { getStationById } = require("./data/db");
+
 
 const app = express();
 const port = process.env.PORT || 3200;
 
-const stations = [];
-
 // middleware
 app.use(bodyparser.json());
-app.use(bodyparser.urlencoded({ extended: false }));
+app.use(bodyparser.urlencoded({ extended: true }));
 
 /**
  * DEFINITIONS:
@@ -29,11 +29,15 @@ app.use(bodyparser.urlencoded({ extended: false }));
  */
 
 /**
+ * /station/{id}
  * Given a station id,
  * return the information for one station
  */
-app.get("/station", (req, res) => {
-  res.status(200).send(stations);
+app.get("/station/:id", async (req, res) => {
+  const station_id = req.params.id;
+  const response = await getStationById(station_id);
+
+  res.status(response.status).send(response.data);
 });
 
 /**
@@ -55,5 +59,5 @@ app.get("/trips", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`running at${port}`);
+  console.log(`running at port ${port}`);
 });
