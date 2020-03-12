@@ -2,7 +2,7 @@ import express from 'express';
 import bodyparser from 'body-parser';
 import * as z from 'zebras';
 import get from 'lodash/get';
-import { getStationById, getAgeGroupsAtStationsToday } from './data/db';
+import { getStationById, getAgeGroupsAtStationsToday, getLatestTripsEndedAtStationsToday } from './data/db';
 
 const app = express();
 const port = process.env.PORT || 3200;
@@ -60,11 +60,16 @@ app.get('/age_groups', (req, res) => {
 });
 
 /**
+ * GET /trips_to_stations?stations={stationId1,stationId2,...}
+ *
  * Given one or more stations,
  * return the last 20 trips that ended at each station for a single day.
  */
-app.get('/trips', (req, res) => {
-  res.status(200).send(stations);
+app.get('/trips_to_stations', (req, res) => {
+  const endStations = get(req, 'query["stations"]', '').split(',');
+  const response = getLatestTripsEndedAtStationsToday(endStations, data);
+
+  res.status(response.status).send(response.data);
 });
 
 app.listen(port, () => {

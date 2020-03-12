@@ -1,6 +1,8 @@
 import axios from 'axios';
 import find from 'lodash/find';
 import includes from 'lodash/includes';
+import slice from 'lodash/slice';
+import orderBy from 'lodash/orderBy';
 import * as helpers from '../common/helpers';
 import * as constants from '../common/constants';
 
@@ -79,6 +81,38 @@ export const getAgeGroupsAtStationsToday = (stations, dataSet) => {
     }
 
     const data = [age0To20, age21To30, age31To40, age41To50, age51Over, ageUnknown];
+
+    return {
+      isSuccess,
+      status,
+      data,
+    };
+  } catch (error) {
+    const isSuccess = false;
+
+    return {
+      isSuccess,
+      status: 500,
+      data: {
+        errorMessage: constants.INTERNAL_SERVER_ERROR_MESSAGE,
+      },
+    };
+  }
+}
+
+export const getLatestTripsEndedAtStationsToday = (stations, dataSet) => {
+  try {
+    const isSuccess = true;
+    const status = 200;
+    const data = {};
+
+    if (stations.length > 0) {
+      stations.forEach((stationId) => {
+        const trips = dataSet.filter((row) => row[constants.END_STATION_ID] === stationId && helpers.isToday(row[constants.LOCAL_END_TIME]))
+        const sortedTrips = orderBy(trips, [constants.LOCAL_END_TIME], ['desc']);
+        data[stationId] = slice(sortedTrips, 0, 20);
+      });
+    }
 
     return {
       isSuccess,
